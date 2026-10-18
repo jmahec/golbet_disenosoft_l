@@ -8,32 +8,53 @@
 
 @{
     var current = (MatchStatus?)ViewBag.CurrentStatus;
+    var currentSearch = (string?)ViewBag.CurrentSearch; @* Taller: texto de búsqueda activo *@
 }
 
+@* Taller: formulario GET de búsqueda; el input oculto conserva el filtro de estado activo *@
+<form asp-action="Index" method="get" class="d-flex gap-2 mb-3">
+    @if (current.HasValue)
+    {
+        <input type="hidden" name="status" value="@current" />
+    }
+    <input type="text" name="search" value="@currentSearch" class="form-control"
+           placeholder="Buscar por equipo..." />
+    <button type="submit" class="btn btn-success">Buscar</button>
+</form>
+
 <div class="d-flex gap-2 flex-wrap mb-4">
-    <a asp-action="Index"
-           class="btn btn-sm @(current is null ? "btn-success" : "btn-outline-success")">
+    <a asp-action="Index" asp-route-search="@currentSearch"
+       class="btn btn-sm @(current is null ? "btn-success" : "btn-outline-success")">
         Todos
     </a>
-    <a asp-action="Index" asp-route-status="@MatchStatus.Scheduled"
-           class="btn btn-sm @(current == MatchStatus.Scheduled ? "btn-success" : "btn-outline-success")">
+    <a asp-action="Index" asp-route-status="@MatchStatus.Scheduled" asp-route-search="@currentSearch"
+       class="btn btn-sm @(current == MatchStatus.Scheduled ? "btn-success" : "btn-outline-success")">
         Programados
     </a>
-    <a asp-action="Index" asp-route-status="@MatchStatus.InProgress"
-           class="btn btn-sm @(current == MatchStatus.InProgress ? "btn-success" : "btn-outline-success")">
+    <a asp-action="Index" asp-route-status="@MatchStatus.InProgress" asp-route-search="@currentSearch"
+       class="btn btn-sm @(current == MatchStatus.InProgress ? "btn-success" : "btn-outline-success")">
         En juego
     </a>
-    <a asp-action="Index" asp-route-status="@MatchStatus.Finished"
-           class="btn btn-sm @(current == MatchStatus.Finished ? "btn-success" : "btn-outline-success")">
+    <a asp-action="Index" asp-route-status="@MatchStatus.Finished" asp-route-search="@currentSearch"
+       class="btn btn-sm @(current == MatchStatus.Finished ? "btn-success" : "btn-outline-success")">
         Finalizados
     </a>
 </div>
- 
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>⚽ Cartelera de partidos</h2>
     <a asp-action="Create" class="btn btn-success">+ Nuevo partido</a>
 </div>
- 
+
+@* Taller: mensaje cuando la búsqueda no devuelve partidos *@
+@if (!Model.Any() && !string.IsNullOrWhiteSpace(currentSearch))
+{
+    <div class="alert alert-info text-center">
+        <p class="mb-3">No hay partidos para “@currentSearch”</p>
+        <a asp-action="Index" class="btn btn-outline-success">Volver a la cartelera de partidos</a>
+    </div>
+}
+
 <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
     @foreach (var match in Model)
     {
@@ -56,7 +77,7 @@
                             break;
                     }
                 </div>
- 
+
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center text-center">
                         <div class="w-100">
@@ -64,7 +85,7 @@
                                  alt="@match.HomeTeamName" width="60" height="60" class="mb-1" />
                             <div class="fw-bold small">@match.HomeTeamName</div>
                         </div>
- 
+
                         <div class="px-3 text-nowrap">
                             @if (match.Status == MatchStatus.Finished)
                             {
@@ -75,7 +96,7 @@
                                 <span class="fs-4 text-muted">vs</span>
                             }
                         </div>
- 
+
                         <div class="w-100">
                             <img src="@(match.AwayTeamCrestUrl ?? "https://placehold.co/60x60/e9ecef/6c757d?text=FC")"
                                  alt="@match.AwayTeamName" width="60" height="60" class="mb-1" />
@@ -83,7 +104,7 @@
                         </div>
                     </div>
                 </div>
- 
+
                 <div class="card-footer">
                     <div class="row g-2 text-center">
                         <div class="col">
@@ -106,7 +127,7 @@
                         </div>
                     </div>
                     <a asp-action="Detail" asp-route-id="@match.Id"
-                           class="btn btn-sm btn-outline-secondary w-100 mt-2">
+                       class="btn btn-sm btn-outline-secondary w-100 mt-2">
                         Ver detalle
                     </a>
                 </div>
