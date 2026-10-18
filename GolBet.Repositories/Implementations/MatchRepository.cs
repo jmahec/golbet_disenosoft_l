@@ -11,7 +11,7 @@ public class MatchRepository : GenericRepository<Match>, IMatchRepository
 {
     public MatchRepository(AppDbContext context) : base(context) { }
 
-    public async Task<IEnumerable<Match>> GetAllWithTeamsAsync(MatchStatus? status = null)
+    public async Task<IEnumerable<Match>> GetAllWithTeamsAsync(MatchStatus? status = null, string? search = null)
     {
         var query = _dbSet
             .Include(m => m.HomeTeam) //El include viene siendo un JOIN en SQL
@@ -22,6 +22,14 @@ public class MatchRepository : GenericRepository<Match>, IMatchRepository
 
         if (status.HasValue)
             query = query.Where(m => m.Status == status.Value);
+
+        // Taller: búsqueda por nombre de equipo (local O visitante). El filtro se hace en SQL (LIKE), no en memoria.
+        // No distingue mayúsculas gracias a la collation por defecto de SQL Server.
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(m => m.HomeTeam.Name.Contains(term) || m.AwayTeam.Name.Contains(term));
+        }
 
         return await query.OrderBy(m => m.Date).ToListAsync();
     }
