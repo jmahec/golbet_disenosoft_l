@@ -23,7 +23,7 @@ public class MatchRepository : GenericRepository<Match>, IMatchRepository
         if (status.HasValue)
             query = query.Where(m => m.Status == status.Value);
 
-        // Taller: búsqueda por nombre de equipo (local O visitante). El filtro se hace en SQL (LIKE), no en memoria.
+        // búsqueda por nombre de equipo (local O visitante). El filtro se hace en SQL (LIKE), no en memoria.
         // No distingue mayúsculas gracias a la collation por defecto de SQL Server.
         if (!string.IsNullOrWhiteSpace(search))
         {
